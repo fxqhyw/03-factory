@@ -1,5 +1,5 @@
 require_relative 'factory'
-#basic usage example
+# basic usage example
 
 Customer = Factory.new(:name, :address, :zip)
 

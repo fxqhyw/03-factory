@@ -19,11 +19,7 @@ class Factory
   end
 
   def self.args_validation(args)
-    args.each do |a|
-      unless a.is_a? Symbol
-        raise NameError, "identifier #{a} need to be constant"
-      end
-    end
+    raise NameError, "identifier #{a} need to be constant" unless args.all? { |arg| arg.is_a?(Symbol) }
   end
 
   def self.class_create(*args, &block)
@@ -53,8 +49,7 @@ class Factory
 
   def [](key)
     if key.is_a?(Integer)
-      msg = "offset #{key} too large for factory(size:#{length})"
-      raise IndexError, msg if key > length - 1
+      raise IndexError, "offset #{key} too large for factory(size:#{length})" if key > length - 1
       instance_variable_get(instance_variables[key])
     else
       send(key.to_sym)
@@ -63,15 +58,14 @@ class Factory
 
   def []=(key, value)
     if key.is_a?(Integer)
-      iv = instance_variables[key]
-      instance_variable_set(iv, value)
+      instance_variable_set(instance_variables[key], value)
     else
-      send("#{key.to_sym}=", value)
+      public_send("#{key.to_sym}=", value)
     end
   end
 
   def to_a
-    instance_variables.inject([]) { |arr, iv| arr << instance_variable_get(iv) }
+    instance_variables.to_a
   end
 
   alias values to_a
@@ -81,7 +75,7 @@ class Factory
   end
 
   def members
-    instance_variables.inject([]) { |mem, iv| mem << iv.to_s.sub('@', '').to_sym }
+    instance_variables.to_a.map { |instance| instance.to_s.sub('@', '').to_sym }
   end
 
   def length
